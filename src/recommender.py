@@ -10,34 +10,46 @@ MOVIES_PATH = "model/movies.pkl"
 SIMILARITY_PATH = "model/similarity.pkl"
 
 # ==============================
-# Google Drive Links (ORIGINAL)
+# Google Drive Direct Links
 # ==============================
-MOVIES_URL = "https://drive.google.com/file/d/1hrhBsxABhGR2ts7gRPI7pyB6Fdn_OjkW/view"
-SIMILARITY_URL = "https://drive.google.com/file/d/19lsw0YwtmgxjSojNeLeoRcywYoUevOnN/view"
+MOVIES_URL = "https://drive.google.com/uc?id=1k3TuuEdfjlifTiroEbOWK0-S1gFDlUEA"
+SIMILARITY_URL = "https://drive.google.com/uc?id=1VnJsEN_RJ4iF9JlSJkeULmCL4djgjEW_"
 
 
 # ==============================
-# Download Function (using gdown)
+# Download Function (robust)
 # ==============================
 def download_file(path, url):
-    if not os.path.exists(path):
-        os.makedirs("model", exist_ok=True)
+    os.makedirs("model", exist_ok=True)
+
+    # Re-download if file missing or corrupted
+    if not os.path.exists(path) or os.path.getsize(path) < 5_000_000:
         print(f"Downloading {path}...")
 
+        if os.path.exists(path):
+            os.remove(path)
+
         gdown.download(url, path, quiet=False)
+
+        # Validate file size
+        size = os.path.getsize(path)
+        print(f"{path} size: {size}")
+
+        if size < 5_000_000:
+            raise Exception(f"{path} download failed or corrupted.")
 
         print(f"{path} downloaded successfully!")
 
 
 # ==============================
-# Ensure Files Exist
+# Download files
 # ==============================
 download_file(MOVIES_PATH, MOVIES_URL)
 download_file(SIMILARITY_PATH, SIMILARITY_URL)
 
 
 # ==============================
-# Load Data Safely
+# Load Data
 # ==============================
 try:
     with open(MOVIES_PATH, "rb") as f:
@@ -82,7 +94,7 @@ def recommend(movie, top_n=5):
 
 
 # ==============================
-# Test Run
+# Test
 # ==============================
 if __name__ == "__main__":
     print(recommend("Avatar"))
