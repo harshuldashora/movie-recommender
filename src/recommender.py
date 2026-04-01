@@ -1,74 +1,17 @@
-import os
 import pickle
 import pandas as pd
-import gdown
 
-# ==============================
-# Paths
-# ==============================
-MOVIES_PATH = "model/movies.pkl"
-SIMILARITY_PATH = "model/similarity.pkl"
-
-# ==============================
-# Google Drive Direct Links
-# ==============================
-MOVIES_URL = "https://drive.google.com/uc?id=1k3TuuEdfjlifTiroEbOWK0-S1gFDlUEA"
-SIMILARITY_URL = "https://drive.google.com/uc?id=1VnJsEN_RJ4iF9JlSJkeULmCL4djgjEW_"
+# Load saved data
+movies = pickle.load(open('model/movies.pkl', 'rb'))
+similarity = pickle.load(open('model/similarity.pkl', 'rb'))
 
 
-# ==============================
-# Download Function (robust)
-# ==============================
-def download_file(path, url):
-    os.makedirs("model", exist_ok=True)
-
-    # Re-download if file missing or corrupted
-    if not os.path.exists(path) or os.path.getsize(path) < 5_000_000:
-        print(f"Downloading {path}...")
-
-        if os.path.exists(path):
-            os.remove(path)
-
-        gdown.download(url, path, quiet=False)
-
-        # Validate file size
-        size = os.path.getsize(path)
-        print(f"{path} size: {size}")
-
-        if size < 5_000_000:
-            raise Exception(f"{path} download failed or corrupted.")
-
-        print(f"{path} downloaded successfully!")
-
-
-# ==============================
-# Download files
-# ==============================
-download_file(MOVIES_PATH, MOVIES_URL)
-download_file(SIMILARITY_PATH, SIMILARITY_URL)
-
-
-# ==============================
-# Load Data
-# ==============================
-try:
-    with open(MOVIES_PATH, "rb") as f:
-        movies = pickle.load(f)
-
-    with open(SIMILARITY_PATH, "rb") as f:
-        similarity = pickle.load(f)
-
-except Exception as e:
-    raise RuntimeError(f"Error loading model files: {e}")
-
-
-# ==============================
-# Recommendation Function
-# ==============================
 def recommend(movie, top_n=5):
+    # Convert titles to lowercase for matching
     movie = movie.lower()
     movies['title_lower'] = movies['title'].str.lower()
 
+    # Check if movie exists
     if movie not in movies['title_lower'].values:
         return ["Movie not found in database"]
 
@@ -93,8 +36,5 @@ def recommend(movie, top_n=5):
     return recommended_movies
 
 
-# ==============================
-# Test
-# ==============================
 if __name__ == "__main__":
     print(recommend("Avatar"))
