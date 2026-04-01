@@ -1,7 +1,7 @@
 import os
 import pickle
 import pandas as pd
-import requests
+import gdown
 
 # ==============================
 # Paths
@@ -10,33 +10,21 @@ MOVIES_PATH = "model/movies.pkl"
 SIMILARITY_PATH = "model/similarity.pkl"
 
 # ==============================
-# Google Drive Direct Links
+# Google Drive Links (ORIGINAL)
 # ==============================
-MOVIES_URL = "https://drive.google.com/uc?id=1hrhBsxABhGR2ts7gRPI7pyB6Fdn_OjkW"
-SIMILARITY_URL = "https://drive.google.com/uc?id=19lsw0YwtmgxjSojNeLeoRcywYoUevOnN"
+MOVIES_URL = "https://drive.google.com/file/d/1hrhBsxABhGR2ts7gRPI7pyB6Fdn_OjkW/view"
+SIMILARITY_URL = "https://drive.google.com/file/d/19lsw0YwtmgxjSojNeLeoRcywYoUevOnN/view"
 
 
 # ==============================
-# Download Function (Robust)
+# Download Function (using gdown)
 # ==============================
 def download_file(path, url):
     if not os.path.exists(path):
         os.makedirs("model", exist_ok=True)
         print(f"Downloading {path}...")
 
-        response = requests.get(url, stream=True)
-
-        # Detect Google Drive blocking
-        content_type = response.headers.get("Content-Type", "")
-        if "text/html" in content_type:
-            raise Exception(
-                f"Download failed for {path}. Make sure file is public."
-            )
-
-        with open(path, "wb") as f:
-            for chunk in response.iter_content(chunk_size=8192):
-                if chunk:
-                    f.write(chunk)
+        gdown.download(url, path, quiet=False)
 
         print(f"{path} downloaded successfully!")
 
