@@ -10,7 +10,7 @@ MOVIES_PATH = "model/movies.pkl"
 SIMILARITY_PATH = "model/similarity.pkl"
 
 # ==============================
-# Hugging Face Direct Links
+# Hugging Face Links (BEST)
 # ==============================
 MOVIES_URL = "https://huggingface.co/harshuldashora/movie-recommender/resolve/main/movies.pkl"
 SIMILARITY_URL = "https://huggingface.co/harshuldashora/movie-recommender/resolve/main/similarity.pkl"
@@ -22,7 +22,7 @@ SIMILARITY_URL = "https://huggingface.co/harshuldashora/movie-recommender/resolv
 def download_file(path, url):
     os.makedirs("model", exist_ok=True)
 
-    # Redownload if missing or corrupted
+    # Download if missing or too small (corrupt)
     if not os.path.exists(path) or os.path.getsize(path) < 1_000_000:
         print(f"Downloading {path}...")
 
@@ -46,7 +46,7 @@ def download_file(path, url):
 
 
 # ==============================
-# Download files
+# Ensure files exist
 # ==============================
 download_file(MOVIES_PATH, MOVIES_URL)
 download_file(SIMILARITY_PATH, SIMILARITY_URL)
@@ -62,7 +62,7 @@ similarity = pickle.load(open(SIMILARITY_PATH, 'rb'))
 # ==============================
 # Recommendation Function
 # ==============================
-def recommend(movie, top_n=5):
+def recommend(movie, top_n=5, language=None):
     movie = movie.lower()
     movies['title_lower'] = movies['title'].str.lower()
 
@@ -70,12 +70,16 @@ def recommend(movie, top_n=5):
         return ["Movie not found in database"]
 
     movie_index = movies[movies['title_lower'] == movie].index[0]
-
     distances = similarity[movie_index]
 
     movie_scores = []
 
     for i, score in enumerate(distances):
+
+        # ✅ LANGUAGE FILTER (MAIN FIX)
+        if language and movies.iloc[i]['original_language'] != language:
+            continue
+
         rating = movies.iloc[i]['vote_average']
         final_score = (0.7 * score) + (0.3 * (rating / 10))
         movie_scores.append((i, final_score))
@@ -90,5 +94,8 @@ def recommend(movie, top_n=5):
     return recommended_movies
 
 
+# ==============================
+# Test
+# ==============================
 if __name__ == "__main__":
-    print(recommend("Avatar"))
+    print(recommend("Avatar", language="en"))
