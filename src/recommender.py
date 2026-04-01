@@ -1,21 +1,35 @@
 import os
 import pickle
 import pandas as pd
-import requests
+import gdown
 
 MOVIES_PATH = "model/movies.pkl"
 SIMILARITY_PATH = "model/similarity.pkl"
 
+<<<<<<< HEAD
 MOVIES_URL = "https://huggingface.co/harshuldashora/movie-recommender/resolve/main/movies.pkl"
 SIMILARITY_URL = "https://huggingface.co/harshuldashora/movie-recommender/resolve/main/similarity.pkl"
 
 
+=======
+# ==============================
+# Google Drive Links (ORIGINAL)
+# ==============================
+MOVIES_URL = "https://drive.google.com/file/d/1hrhBsxABhGR2ts7gRPI7pyB6Fdn_OjkW/view"
+SIMILARITY_URL = "https://drive.google.com/file/d/19lsw0YwtmgxjSojNeLeoRcywYoUevOnN/view"
+
+
+# ==============================
+# Download Function (using gdown)
+# ==============================
+>>>>>>> b23699f (Add gdown dependency)
 def download_file(path, url):
     os.makedirs("model", exist_ok=True)
 
     if not os.path.exists(path) or os.path.getsize(path) < 1_000_000:
         print(f"Downloading {path}...")
 
+<<<<<<< HEAD
         if os.path.exists(path):
             os.remove(path)
 
@@ -25,6 +39,9 @@ def download_file(path, url):
             for chunk in response.iter_content(chunk_size=8192):
                 if chunk:
                     f.write(chunk)
+=======
+        gdown.download(url, path, quiet=False)
+>>>>>>> b23699f (Add gdown dependency)
 
 
 download_file(MOVIES_PATH, MOVIES_URL)
