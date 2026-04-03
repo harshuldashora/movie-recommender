@@ -2,6 +2,7 @@ import os
 import pickle
 import pandas as pd
 import requests
+import re
 
 MOVIES_PATH = "model/movies.pkl"
 SIMILARITY_PATH = "model/similarity.pkl"
@@ -27,27 +28,38 @@ def download_file(path, url):
                     f.write(chunk)
 
 
+# Download files
 download_file(MOVIES_PATH, MOVIES_URL)
 download_file(SIMILARITY_PATH, SIMILARITY_URL)
 
+# Load data
 movies = pickle.load(open(MOVIES_PATH, 'rb'))
 similarity = pickle.load(open(SIMILARITY_PATH, 'rb'))
 
 
-def recommend(movie, top_n=5, language=None):
-    movie = movie.lower()
-    movies['title_lower'] = movies['title'].str.lower()
+# ✅ NEW: normalization function
+def normalize(text):
+    return re.sub(r'[^a-z0-9]', '', text.lower())
 
-    if movie not in movies['title_lower'].values:
+
+def recommend(movie, top_n=5, language=None):
+    # ✅ normalize input
+    movie = normalize(movie)
+
+    # ✅ normalize dataset titles
+    movies['title_clean'] = movies['title'].apply(normalize)
+
+    if movie not in movies['title_clean'].values:
         return ["Movie not found in database"]
 
-    movie_index = movies[movies['title_lower'] == movie].index[0]
+    movie_index = movies[movies['title_clean'] == movie].index[0]
     distances = similarity[movie_index]
 
     movie_scores = []
 
     for i, score in enumerate(distances):
 
+        # language filter
         if language and movies.iloc[i]['original_language'] != language:
             continue
 
@@ -66,4 +78,4 @@ def recommend(movie, top_n=5, language=None):
 
 
 if __name__ == "__main__":
-    print(recommend("Avatar", language="en"))
+    print(recommend("spider man", language="en"))
