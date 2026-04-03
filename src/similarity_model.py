@@ -1,6 +1,6 @@
 import pandas as pd
 import pickle
-from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 
@@ -13,7 +13,7 @@ def build_similarity():
     print("Vectorizing text...")
 
     # Convert text to numerical vectors
-    cv = CountVectorizer(max_features=5000, stop_words='english')
+    cv = TfidfVectorizer(max_features=10000, stop_words='english')
     vectors = cv.fit_transform(df['tags']).toarray()
 
     print("Calculating similarity matrix...")
