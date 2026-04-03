@@ -14,7 +14,8 @@ def preprocess():
 
     print("Selecting required columns...")
     movies = movies[['movie_id', 'title', 'overview', 'genres',
-                 'keywords', 'cast', 'crew', 'runtime', 'original_language', 'vote_average']]
+                     'keywords', 'cast', 'crew', 'runtime',
+                     'original_language', 'vote_average']]
 
     print("Dropping missing values...")
     movies.dropna(inplace=True)
@@ -31,18 +32,28 @@ def preprocess():
     movies['cast'] = movies['cast'].apply(clean_list)
     movies['crew'] = movies['crew'].apply(clean_list)
 
-    print("Processing overview...")
-    movies['overview'] = movies['overview'].apply(lambda x: x.split())
+    print("Processing overview (important)...")
+    # ✅ LIMIT overview to reduce noise (VERY IMPORTANT)
+    movies['overview'] = movies['overview'].apply(lambda x: x.split()[:30])
 
-    print("Creating tags...")
-    movies['tags'] = movies['overview'] + movies['genres'] + \
-                    movies['keywords'] + movies['cast'] + movies['crew']
+    print("Creating tags (optimized for embeddings)...")
+
+    # ❌ DO NOT include language in tags (use as filter only)
+
+    movies['tags'] = (
+        movies['overview'] +
+        movies['genres'] * 2 +
+        movies['keywords'] * 2 +
+        movies['cast'] +
+        movies['crew']
+    )
 
     print("Converting tags to string...")
     movies['tags'] = movies['tags'].apply(lambda x: " ".join(x))
 
     print("Final dataset...")
-    new_df = movies[['movie_id', 'title', 'tags', 'runtime', 'original_language', 'vote_average']]
+    new_df = movies[['movie_id', 'title', 'tags',
+                     'runtime', 'original_language', 'vote_average']]
 
     print("Saving file...")
     new_df.to_csv('data/processed/movies_cleaned.csv', index=False)
